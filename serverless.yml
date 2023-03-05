@@ -10,6 +10,24 @@ provider:
       allowedOrigins:
         - http://localhost:3000
         - https://d2smauulytlpo1.cloudfront.net
+  # environment:
+  #   TABLE_PRODUCTS:
+  #     Ref: products
+  #   TABLE_STOCKS:
+  #     Ref: stocks
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - "Fn::GetAtt": [products, Arn]
+        - "Fn::GetAtt": [stocks, Arn]
 
 functions:
   getProductsList:
@@ -25,3 +43,39 @@ functions:
       - httpApi:
           path: /products/{id}
           method: get
+
+  createProduct:
+    handler: lambda/createProduct/index.handler
+    events:
+      - httpApi:
+          path: /products
+          method: post
+
+resources:
+  Resources:
+    products:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: products
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+    stocks:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: stocks
+        AttributeDefinitions:
+          - AttributeName: product_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: product_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
