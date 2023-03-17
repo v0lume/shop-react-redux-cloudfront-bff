@@ -10,6 +10,13 @@ provider:
       allowedOrigins:
         - http://localhost:3000
         - https://d2smauulytlpo1.cloudfront.net
+    authorizers:
+      basicAuthorizer:
+        type: request
+        functionArn: 'arn:aws:lambda:${aws:region}:${aws:accountId}:function:authorization-service-${opt:stage, "dev"}-basicAuthorizer'
+        resultTtlInSeconds: 0
+        identitySource: $request.header.Authorization
+
   iamRoleStatements:
     - Effect: "Allow"
       Action: "sqs:*"
@@ -39,6 +46,8 @@ functions:
       - httpApi:
           path: /import/{name}
           method: get
+          authorizer:
+            name: basicAuthorizer
   importFileParser:
     handler: lambda/importFileParser/index.handler
     events:
