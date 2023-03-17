@@ -1,6 +1,6 @@
-# package directories
-node_modules
-jspm_packages
-
-# Serverless directories
-.serverless
+*/.serverless/
+*/node_modules/
+*/.webpack/
+/.idea
+*/coverage/
+*/.env

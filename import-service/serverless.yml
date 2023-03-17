@@ -1,0 +1,67 @@
+service: import-service
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  profile: epam-h4v3u
+  httpApi:
+    cors:
+      allowedOrigins:
+        - http://localhost:3000
+        - https://d2smauulytlpo1.cloudfront.net
+
+custom:
+  client:
+    bucketName: katrading-import
+    prefix: uploaded
+  s3BucketName: ${self:custom.client.bucketName}
+
+functions:
+  importProductsFile:
+    handler: lambda/importProductsFile/index.handler
+    events:
+      - httpApi:
+          path: /import/{name}
+          method: get
+  importFileParser:
+    handler: lambda/importFileParser/index.handler
+    events:
+      - s3:
+          bucket: ${self:custom.client.bucketName}
+          event: 's3:ObjectCreated:*'
+          rules: [{ prefix: 'uploaded/' }]
+          existing: true
+
+resources:
+  Resources:
+    ## Specifying the S3 Bucket
+    WebAppS3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.s3BucketName}
+        AccessControl: Private
+
+    WebAppS3BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket:
+          Ref: WebAppS3Bucket
+        PolicyDocument:
+          Statement:
+            - Sid: 'AllowListBucket'
+              Effect: Allow
+              Action: s3:ListBucket
+              Resource:
+                - arn:aws:s3:::${self:custom.s3BucketName}
+              Principal: '*'
+            - Sid: 'AllowFullAccess'
+              Effect: Allow
+              Action: s3:*
+              Resource:
+                - arn:aws:s3:::${self:custom.s3BucketName}/*
+              Principal: '*'
+
+  Outputs:
+    WebAppS3BucketOutput:
+      Value: !Ref WebAppS3Bucket
