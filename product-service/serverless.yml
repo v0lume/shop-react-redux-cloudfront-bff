@@ -10,11 +10,9 @@ provider:
       allowedOrigins:
         - http://localhost:3000
         - https://d2smauulytlpo1.cloudfront.net
-  # environment:
-  #   TABLE_PRODUCTS:
-  #     Ref: products
-  #   TABLE_STOCKS:
-  #     Ref: stocks
+  environment:
+    SNS_ARN:
+      Ref: createProductTopic
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -28,6 +26,10 @@ provider:
       Resource:
         - "Fn::GetAtt": [products, Arn]
         - "Fn::GetAtt": [stocks, Arn]
+    - Effect: "Allow"
+      Action: "sns:*"
+      Resource:
+        Ref: createProductTopic
 
 functions:
   getProductsList:
@@ -50,6 +52,14 @@ functions:
       - httpApi:
           path: /products
           method: post
+      
+  catalogBatchProcess:
+    handler: lambda/catalogBatchProcess/index.handler
+    events:
+      - sqs:
+          batchSize: 5
+          arn:
+            Fn::GetAtt: [catalogItemsQueue, Arn]
 
 resources:
   Resources:
@@ -79,3 +89,21 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
+
+    catalogItemsQueue:
+      Type: AWS::SQS::Queue
+      Properties: 
+        QueueName: catalogItemsQueue
+      
+    createProductTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: createProductTopic
+
+    subscriptionProductTopic:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Protocol: email
+        TopicArn:
+          Ref: createProductTopic
+        Endpoint: artsiom_shmanouski@epam.com

@@ -10,6 +10,21 @@ provider:
       allowedOrigins:
         - http://localhost:3000
         - https://d2smauulytlpo1.cloudfront.net
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action: "sqs:*"
+      Resource:
+        - "arn:aws:sqs:us-east-1:497048328653:catalogItemsQueue"
+    - Effect: "Allow"
+      Action:
+        - s3:ListBucket
+      Resource:
+        - "arn:aws:s3:::katrading-import"
+    - Effect: "Allow"
+      Action:
+        - s3:*
+      Resource:
+        - "arn:aws:s3:::katrading-import/*"
 
 custom:
   client:
