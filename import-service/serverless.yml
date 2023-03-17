@@ -41,6 +41,19 @@ resources:
       Properties:
         BucketName: ${self:custom.s3BucketName}
         AccessControl: Private
+        CorsConfiguration:
+          CorsRules:
+            - AllowedMethods:
+                - GET
+                - HEAD
+                - POST
+                - PUT
+                - DELETE
+              AllowedHeaders:
+                - "*"
+              AllowedOrigins:
+                - "http://localhost:3000"
+                - "https://d2smauulytlpo1.cloudfront.net"
 
     WebAppS3BucketPolicy:
       Type: AWS::S3::BucketPolicy
