@@ -1,0 +1,20 @@
+service: authorization-service
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  profile: epam-h4v3u
+  httpApi:
+    cors:
+      allowedOrigins:
+        - http://localhost:3000
+        - https://d2smauulytlpo1.cloudfront.net
+
+functions:
+  basicAuthorizer:
+    handler: lambda/basicAuthorizer/index.handler
+
+plugins:
+  - serverless-export-env
+  - serverless-dotenv-plugin
